@@ -1,0 +1,56 @@
+service: diabolo-ia-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-1
+  memorySize: 512
+  timeout: 30
+  environment:
+    PROJECT_NAME: ${env:PROJECT_NAME}
+    API_V1_STR: ${env:API_V1_STR}
+    BACKEND_CORS_ORIGINS: ${env:BACKEND_CORS_ORIGINS}
+    SUPABASE_URL: ${env:SUPABASE_URL}
+    SUPABASE_KEY: ${env:SUPABASE_KEY}
+    SUPABASE_JWT_SECRET: ${env:SUPABASE_JWT_SECRET}
+    AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
+    AWS_REGION: ${env:AWS_REGION, self:provider.region}
+    CLAUDE_MODEL_ID: ${env:CLAUDE_MODEL_ID}
+    SECRET_KEY: ${env:SECRET_KEY}
+    ALGORITHM: ${env:ALGORITHM}
+    ACCESS_TOKEN_EXPIRE_MINUTES: ${env:ACCESS_TOKEN_EXPIRE_MINUTES}
+    STAGE: ${self:provider.stage}
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!venv/**'
+    - '!.pytest_cache/**'
+    - '!__pycache__/**'
+    - '!tests/**'
+
+functions:
+  api:
+    handler: app.main.handler
+    package:
+      patterns:
+        - 'app/**'
+        - 'requirements.txt'
+    events:
+      - httpApi: '*'
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    zip: true
+    slim: true
+    useDownloadCache: true
+    useStaticCache: true
